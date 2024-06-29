@@ -1,9 +1,9 @@
 # RISC V-Architecture implementation on-Circuitverse
 ### The GS01, a limited RISC-V Computer that can control a RGB matrix - Created on CircuitVerse
-
-![alt text](GS01.gif).
-
 Made by Glenn Corthout & Stijn Verwoerd 
+
+![alt text](GS01_T.gif)
+
 
 ## Index
 
@@ -44,7 +44,7 @@ Address 0x0000003c (position 16) is being used as the memory address where the c
 
 
 ### Simple color changing routine, increase or decrease the value in row 4
-```YAML
+```mips
 lw x10, 60(x0)      # load in ctrmem
 blt x10, x16, -4    # if ctrmem < 1 go back to start
 blt x10, x17, 8     # if ctrmem < 2 go to add -1
@@ -63,11 +63,11 @@ blt x0, x17, -48    # go back to start of program
 
 ### Refactored above code, this is better for more buttons <- write later
 
-```YAML
+```MIPS
 # loop
     lw x10, 60(x0)        # 0       Load control memory into x10
-    blt x10, x16, 28      # 4       If control memory < 1, go to reset
-    beq x10, x17, 12      # 8       If control memory == 2, go to add +1
+    blt x10, x16, 28      # 4       If ctrmem < 1, go to reset
+    beq x10, x17, 12      # 8       If ctrmem == 2, go to add +1
 # add_minus1
     addi x15, x5, -4      # 12      Subtract 1 from x5
     j 8                   # 16      Jump to store
