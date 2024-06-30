@@ -24,10 +24,12 @@ Made by Glenn Corthout & Stijn Verwoerd
 ## Assembly code
 
 ### Registers
+
+
 To use our computer effectively and be able to program it, we will have to assign certain registers to certain tasks
 
 * x10 - ```0x00000000``` | Here the injected controller value gets stored
-
+* x15 - ```0x00000000``` | This is the starting address of video memory
 
 To be able  to run the program effectively without filling up our very limited memory we have chosen to preset certain registers at the following values: *
 
@@ -39,12 +41,11 @@ The following values get used to compare the injected controller value with.
 
 ### Memory
 
-We currently only have 16 32-bit memory adresses. 
 Address 0x0000003c (position 16) is being used as the memory address where the controller value gets injected.
 
 
 ### Simple color changing routine, increase or decrease the value in row 4
-```mips
+```YAML
 lw x10, 60(x0)      # load in ctrmem
 blt x10, x16, -4    # if ctrmem < 1 go back to start
 blt x10, x17, 8     # if ctrmem < 2 go to add -1
@@ -63,12 +64,18 @@ blt x0, x17, -48    # go back to start of program
 
 ### Refactored above code, this is better for more buttons <- write later
 
-```MIPS
-# loop
+```YAML
+# button press loop, This constantly checks which button was pressed and then jumps to the related code
     lw x10, 60(x0)        # 0       Load control memory into x10
-    blt x10, x16, 28      # 4       If ctrmem < 1, go to reset
+    beq x10, x0, 12       # 8       If ctrmem == 0, go to loop
+    beq x10, x16, 12      # 8       If ctrmem == 1, go to add +1
     beq x10, x17, 12      # 8       If ctrmem == 2, go to add +1
-# add_minus1
+    beq x10, x18, 12      # 8       If ctrmem == 3, go to add +1
+    beq x10, x19, 12      # 8       If ctrmem == 4, go to add +1
+# shift down
+    addi x15, x15, 4
+    beq x0, x0,           #         jump to reset
+# shift right
     addi x15, x5, -4      # 12      Subtract 1 from x5
     j 8                   # 16      Jump to store
 # add1        
