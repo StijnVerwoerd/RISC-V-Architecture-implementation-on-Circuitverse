@@ -7,16 +7,16 @@ Made by Glenn Corthout & Stijn Verwoerd
 
 ## Index
 
-* [Dataflow](##heading-2 "Goto Dataflow")
-* [Instructions](##heading-3 "Instructions")
-* [RGB Matrix](##heading-4 "Goto RGB Matrix")
-* [Registers](##heading-5 "Registers")
-* [Memory](##heading-6 "Goto Memory")
-* [Controller](##heading-7 "Controller")
-* [Assembly code](##heading-8 "Assembly code")
+* [Dataflow](#dataflow "Goto Dataflow")
+* [Instructions](#instructions "Goto Instructions")
+* [RGB Matrix](#rgbmatrix "Goto RGB Matrix")
+* [Registers](#registers "Goto Registers")
+* [Memory](#memory "Goto Memory")
+* [Controller](#controller "Goto Controller")
+* [Assembly code](#assembly "Goto Assembly code")
 
 
-## Dataflow
+## Dataflow <a id="dataflow"></a>
 ```mermaid
 
 graph TD
@@ -31,7 +31,7 @@ graph TD
     ins[Instruction decoder]
     end
 
-    subgraph controller
+    subgraph Controller
     but((buttons))
     oi(Controller
     Input/Output)
@@ -45,13 +45,15 @@ graph TD
     Matrix]
     end
 
+    io --data--> mem
     reg -- jump --> PC
-    ctr --> reg
+    ctr -- Enable --> reg
+    ctr -- Enable --> mem
     reg -- address & value --> mem
     mem -- raw instruction --> ins
     ins -- type of instruction --> ctr
+    ins -- rs1, rs2, rd --> reg
     PC -- position in memory --> mem
-    io --data--> mem
 
     io <-- reset & data ---> oi
     but -- L, R, UP, DOWN --> oi
@@ -62,7 +64,7 @@ graph TD
 
 ```
 
-## Instructions
+## Instructions <a id="instructions"></a>
 
 We implemented the following instruction set:
 
@@ -80,11 +82,11 @@ We implemented the following instruction set:
 * SW
 * LW
 
-## RGB Matrix
+## RGB Matrix <a id="rgbmatrix"></a>
 
 
 
-### Registers
+### Registers <a id="registers"></a>
 
 
 To use our computer effectively and be able to program it, we will have to assign certain registers to certain tasks
@@ -99,14 +101,16 @@ controller:
 Video memory:
 * x15 - ```0x00000200``` | This is the starting address of video memory
 
-## Memory
+## Memory <a id="memory"></a>
 
 Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512+.
 This means the computer has a grand total of 18.4kb memory.
 
 Address ```0x000001FC``` (address 508) is being used as the memory address where the controller value gets injected.
 
-## Assembly code
+## Controller <a id="controller"></a>
+
+## Assembly code <a id="assembly"></a>
 
 ### Simple color changing routine, increase or decrease the value in row 4
 ```t
