@@ -15,8 +15,8 @@ Made by Glenn Corthout & Stijn Verwoerd
 * [Controller](#controller "Goto Controller")
 * [Assembly code](#assembly "Goto Assembly code")
 
-
-## Dataflow <a id="dataflow"></a>
+### <a id="dataflow"></a>
+## Dataflow 
 ```mermaid
 
 graph TD
@@ -63,8 +63,8 @@ graph TD
 
 
 ```
-
-## Instructions <a id="instructions"></a>
+### <a id="instructions"></a>
+## Instructions 
 
 We implemented the following instruction set:
 
@@ -82,11 +82,12 @@ We implemented the following instruction set:
 * SW
 * LW
 
-## RGB Matrix <a id="rgbmatrix"></a>
+### <a id="rgbmatrix"></a>
+## RGB Matrix 
 
 
-
-### Registers <a id="registers"></a>
+### <a id="registers"></a>
+## Registers 
 
 
 To use our computer effectively and be able to program it, we will have to assign certain registers to certain tasks
@@ -101,16 +102,19 @@ controller:
 Video memory:
 * x15 - ```0x00000200``` | This is the starting address of video memory
 
-## Memory <a id="memory"></a>
+### <a id="memory"></a>
+## Memory 
 
 Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512+.
 This means the computer has a grand total of 18.4kb memory.
 
 Address ```0x000001FC``` (address 508) is being used as the memory address where the controller value gets injected.
 
-## Controller <a id="controller"></a>
+### <a id="controller"></a>
+## Controller 
 
-## Assembly code <a id="assembly"></a>
+### <a id="assembly"></a>
+## Assembly code 
 
 ### Simple color changing routine, increase or decrease the value in row 4
 ```t
