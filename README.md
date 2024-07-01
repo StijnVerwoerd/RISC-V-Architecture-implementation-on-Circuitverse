@@ -39,11 +39,14 @@ graph TD
     end
 
     subgraph Screen
+    pc(Program 
+    Counter)
     decode[Position and
     color decoder]    
     vmem[(memory)]
     rgb[# RGB #
     Matrix]
+    rd(row decoder)
     end
 
     reg -- jump --> PC
@@ -65,6 +68,8 @@ graph TD
     io <-- reset & data ---> oi
     but -- L, R, UP, DOWN --> oi
 
+    pc --> vmem
+    pc --> rd -- row --> rgb
     reg -- address & value --> vmem
     vmem -- raw data --> decode -- display values --> rgb
 
