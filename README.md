@@ -2,7 +2,7 @@
 ### A limited RISC-V Computer that can control a RGB matrix
 Made by Glenn Corthout & Stijn Verwoerd 
 
-![alt text](GS01_T.gif)
+![alt text](riscvmaze.gif)
 
 
 ## Index
@@ -28,7 +28,7 @@ graph TD
     io(Controller 
     Input/Output)
     PC(Program Counter)
-    ins[Instruction decoder]
+    ins{Instruction decoder}
     alu[\ALU/]
     end
 
@@ -36,6 +36,7 @@ graph TD
     but((buttons))
     oi(Controller
     Input/Output)
+    buf(buffer)
     end
 
     subgraph Screen
@@ -66,8 +67,10 @@ graph TD
     reg -- rs1, rs2 --> alu
     reg -- address & value --> mem
 
-    io <-- reset & data ---> oi
-    but -- L, R, UP, DOWN --> oi
+    io <-- reset & data ----> oi
+    but -- L, R, UP, DOWN --> buf
+    buf -- button pressed --> oi
+
 
     pc --> vmem
     pc --> rd -- row --> rgb
@@ -83,19 +86,10 @@ graph TD
 We implemented the following instruction set:
 
 
-* ADD
-* ADDI
-* AND
-* OR
-* BEG
-* BEQ
-* BLT
-* BLTU
-* SRL
-* SRA
-* SLL
-* SW
-* LW
+* R-type:   ADD, SUB, SLL, SRL, SRA, AND, OR, 
+* I-type:   LW, ADDI, SLLI, 
+* S-type:   SW
+* SB-type:  BEQ, BLT, BGE, BLTU, BGEU
 
 ### <a id="rgbmatrix"></a>
 
@@ -125,10 +119,11 @@ each of these colors is then encoded into their respective 24 bit value that the
 * `000000001111111100000000` - Green
 * `000000000000000011111111` - Blue
 
-To cycle through the rows that should be inserted we have created a small program counter that counts 4 at a time (to jump 4 bytes in memory) and that also splits off and decodes into a row selector for the matrix, this way the same row and value in memory are selected simultaneously. 
+To cycle through the rows that should be inserted we have created a small program counter that counts 4 at a time (to jump 4 bytes in memory) and that also splits off and decodes into a row selector for the matrix, this way the same row and value in memory are selected simultaneously but independently from the rest of the computer. 
 
 Let's say we want to set pixel 2 on row 3 to the colour blue, we would use the following instructions:
 ```t
+addi x15, x0, 512           # start of video memory
 addi x4, x0, 805306368      # sets the register x4 to the value 00110000000000000000000000000000
 sw x4, 12(x15)              # stores the value in x4 to the 3th row in the screen memory
 ```
@@ -137,7 +132,7 @@ sw x4, 12(x15)              # stores the value in x4 to the 3th row in the scree
 
 ## Registers
 
-To use our computer effectively and be able to program it, we will have to assign certain registers to certain tasks
+Certain values we insert into the register module to save extra lines of code, these are standard values for every program.
 
 controller:
 * x10 - ```0x00000000``` | Here the injected controller value gets stored temporarily
@@ -153,8 +148,7 @@ Video memory:
 
 ## Memory 
 
-Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512+.
-This means the computer has a grand total of 18.4kb memory.
+Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512-572.
 
 ```mermaid
 
@@ -180,140 +174,27 @@ graph TD
     
 ```
 
-
-
-
-
-
-
-
-
 ### <a id="controller"></a>
 
 ## Controller 
 
 We use a standard address for the controller.
 
-Address ```0x00000190``` (byte address 404) is being used as the memory address where the controller value gets injected.
+Address ```0x00000190``` (byte address 400) is being used as the memory address where the controller value gets injected.
 
-
-
-
-
-
-
-
-
-
-
+The controller is made functional by a circuit that de-couples the clock from the rest of the circuit and injects a value straight into
+memory position 0x00000190 when a button press is detected. The button pressed are buffered and are reset immediately after the injection, then the software has to detect the button press and can wipe the value from memory so that a new value an be inserted.
 
 ### <a id="assembly"></a>
 
 ## Assembly code 
 
-### Simple color changing routine, increase or decrease the value in row 4
-```t
-# start 
-    lw x10, 60(x0)      # load in ctrmem
-    blt x10, x16, -4    # if ctrmem < 1 go back to start
-    blt x10, x17, 8     # if ctrmem < 2 go to add -1
-    blt x10, x18, 20    # if ctrmem < 3 go to add +1
-# left button pressed
-    addi x5, x5, -1     # add -1 to x5
-    sw x5, 16(x15)      # store x5 in Vmem place 16
-    sw x0, 60(x0)       # store 0 in controller mem slot
-    blt x0, x17, -28    # go back to start of program
-# right button pressed
-    addi x5, x5, 1      # add 1 to x5
-    sw x5, 16(x15)      # store x5 in Vmem place 16
-    sw x0, 60(x0)       # store 0 in controller mem slot
-    blt x0, x17, -44    # go back to start of program
-```
-
-### Code that can make a pixel move up, down, left or right
-
-```t
-# start of the program
-    addi x15, x0, 512       # 0         Starting address of video memory
-    addi x14, x15, 28       # 4         This will be the starting /address/ of the first pixel
-    addi x13, x13, 65536    # 8         This will be the starting /value/ for the first pixel
-    addi x4, x0, 4          # 12
-# checks if button pressed
-    lw x10, 508(x0)         # 16        Load control memory into x10
-    beq x10, x0, -4         # 20        If ctrmem == 0, go to start of loop
-    beq x10, x16, 16        # 24        If ctrmem == 1, go to Left
-    beq x10, x17, 24        # 28        If ctrmem == 2, go to Right
-    beq x10, x18, 32        # 32        If ctrmem == 3, go to Up
-    beq x10, x19, 56        # 36        If ctrmem == 4, go to Down
-# Left    
-    sll x13, x13, x4        # 40        Shift pixel left
-    sw x13, 0(x14)          # 44        Save the value
-    beq x0, x0, 52          # 48        jump to reset
-# Right   
-    srl x13, x13, x4        # 52        Shift pixel right
-    sw x13, 0(x14)          # 56        save the value
-    beq x0, x0, 40          # 60        jump to reset
-# Up   
-    addi x14, x14, -4       # 64        Add -4 to pixel address (move one row up)
-    sw x0, 4(x14)           # 68        save 0 in the old row
-    sw x13, 0(x14)          # 72        save the pixel value in the new row
-    beq x0, x0, 24          # 76        jump to reset
-
-# Down          
-    addi x14, x14, 4        # 80        Add 4 to pixel address (move one row down)
-    sw x0, -4(x14)          # 84        Save 0 in the old row
-    sw x13, 0(x14)          # 88        save the pixel value in the new row
-    beq x0, x0, 4           # 92        jump to reset
-# reset 
-    sw x0, 508(x0)          # 96        Store 0 in control memory
-    beq x0, x0, -84         # 100       Jump back to start
-```
-
 ### Maze game
 
 Place all the maze values directly into memory to be able to load up the game
 
-The following values are in hexadecimal
+The following values are in hexadecimal, they go from left to right, inserted in memory up to down (smaller to higher value)
 
-'MAZE' text:
-```
-20256A54 
-28A44240 
-22254850 
-20246040 
-20246A54
-```
-Maze:
-```
-CC000003 
-CC003FCF 
-CCFF30C3 
-C00C3CC3 
-FFCCF0CF 
-FFCC03CF 
-F00FFF03 
-F3FC0333 
-F000F333 
-FFFFF333 
-C00F0333 
-CCCF3F33 
-CCC03033 
-CCFFF3F3 
-CC0003C3 
-FFFFFFCF
-```
-End of Maze value:
-```
-DC000003
-```
-'WIN!' text:
-```
-101230C4 
-10103CC4 
-111233C4 
-145230C0 
-101230C4
-```
 Maze program
 ```t
 # beginning of screen
@@ -330,14 +211,14 @@ Maze program
     lw x31, 488(x0)     #row 9
     sw x31, 32(x15)
 # wait 2 seconds
-    addi x2, 10
+    addi x2, x0, 20
     addi x1, x1, 1
     blt x1, x2, -8
 # values
-    add x5, x15, 60                 # set end of screen
+    addi x5, x15, 64                # set end of screen + 4
     addi x6, x0, 408                # set beginning of maze place in memory
     addi x4, x0, 2                  # steps for bitshift
-    lw x3, 404(x0)                   # load up the number that equals end of maze
+    lw x3, 404(x0)                  # load up the number that equals end of maze into x3
 # load up maze
     add x7, x0, x6                  # start of maze in mem
     add x23, x0, x15                # add the start row of screen memory to x23
@@ -347,7 +228,7 @@ Maze program
     addi x7, x7, 4                  # next value in memory of the maze
     blt x23, x5, -16                # if current row is smaller than last row of the screen, go back to load the next value
 # load up player position
-    addi x21, x31, 0                # load current row
+    lw x21, 60(x15)                 # load current row
     addi x22, x0, 16                # pos x
     add x21, x21, x22               # add pixel to row value
     addi x23, x15, 60               # pos y
@@ -357,22 +238,22 @@ Maze program
     beq x10, x0, -4                 # If ctrmem == 0, go to start of loop
     beq x10, x16, 16                # If ctrmem == 1, go to Left
     beq x10, x17, 36                # If ctrmem == 2, go to Right
-    beq x10, x18, 56                # If ctrmem == 3, go to Up
-    beq x10, x19, 84                # If ctrmem == 4, go to Down
+    beq x10, x18, 56                # If ctrmem == 4, go to Up
+    beq x10, x19, 84                # If ctrmem == 8, go to Down
 # left
     lw x27, 0(x23)                  # loads current value into reg x27
     sub x27, x27, x22               # subtracts current position from x27 
     sll x22, x22, x4                # shift the value of the player position 2 bits to the left
-    add x27, x22, x21               # add the value of the position and the row together
+    add x27, x27, x22               # add the value of the position and the row together
     sw x27, 0(x23)                  # store the value in the current row
-    beq x0, x0, 92                  # jump to reset
+    beq x0, x0, 88                  # jump to reset
 # right
     lw x27, 0(x23)                  # loads current value into reg x27
     sub x27, x27, x22               # subtracts current position from x27 
     srl x22, x22, x4                # shift the value of the player position 2 bits to the right
-    add x24, x22, x21               # add the value of the position and the row together
-    sw x24, 0(x23)                  # store the value in the current row
-    beq x0, x0, 68                  # jump to reset
+    add x27, x27, x22               # add the value of the position and the row together
+    sw x27, 0(x23)                  # store the value in the current row
+    beq x0, x0, 64                  # jump to reset
 # up
     lw x27, 0(x23)                  # loads current row value into register x27
     sub x27, x27, x22               # subtracts postion x from the current row value
@@ -381,7 +262,7 @@ Maze program
     add x21, x21, x22               # adds postition x into x21
     sw x27, 4(x23)                  # stores the removed pos x back into vmem
     sw x21, 0(x23)                  # stores the added pos x back into vmem
-    beq x0, x0, 36                  # jump to reset
+    beq x0, x0, 32                  # jump to reset
 # down
     lw x27, 0(x23)                  # loads current row value into register x27
     sub x27, x27, x22               # subtracts postion x from the current row value
@@ -392,7 +273,7 @@ Maze program
     sw x21, 0(x23)                  # stores the added pos x back into vmem
 # reset
     beq x21, x3, 12                 # jump to reset screen
-    sw x0, 508(x0)                  # Store 0 in control memory
+    sw x0, 400(x0)                  # Store 0 in control memory
     beq x0, x0, -140                # Jump back to start
 # reset screen
     add x23, x0, x15                # add the start row of screen memory to x23
@@ -411,4 +292,21 @@ Maze program
     lw x31, 508(x0)     #row 9
     sw x31, 32(x15)
     beq x0, x0, -56                 # jump back to reset screen
+```
+
+'MAZE' text:
+```
+20256A54 28A44240 22254850 20246040 20246A54
+```
+Maze:
+```
+CFFFFFFF CC003FCF CCFF30C3 C00C3CC3 FFCCF0CF FFCC03CF F00FFF03 F3FC0333 F000F333 FFFFF333 C00F0333 CCCF3F33 CCC03033 CCFFF3F3 CC0003C3 FFFFFFCF
+```
+End of Maze value:
+```
+DFFFFFFF
+```
+'WIN!' text:
+```
+101230C4 10103CC4 111233C4 145230C0 101230C4
 ```
