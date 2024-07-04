@@ -36,7 +36,6 @@ graph TD
     but((buttons))
     oi(Controller
     Input/Output)
-    buf(buffer)
     end
 
     subgraph Screen
@@ -67,9 +66,8 @@ graph TD
     reg -- rs1, rs2 --> alu
     reg -- address & value --> mem
 
-    io <-- reset & data ----> oi
-    but -- L, R, UP, DOWN --> buf
-    buf -- button pressed --> oi
+    io <-- reset & data ---> oi
+    but -- L, R, UP, DOWN --> oi
 
 
     pc --> vmem
@@ -96,7 +94,7 @@ We implemented the following instruction set:
 ## RGB Matrix 
 We use a 16x16 RGB matrix that is supplied by CircuitVerse.
 
-The matrix can be driven by inserting a value into the address range 0x00000200 - 0x0000023c. Every 4 bytes represents 1 row of the screen 
+The matrix can be driven by inserting a value into the address range 0x00000200 - 0x0000023c (vram). Every 4 bytes represents 1 row of the screen 
 and uses a simple protocol for the data. The data is structured as follows, imagine a 32 bit string divided into 16 2-bit 'cells' that each
 tell something about the location and the color assigned to it.
 
@@ -148,7 +146,7 @@ Video memory:
 
 ## Memory 
 
-Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512-572.
+Currently the computer has total of 128 4-byte addresses with an extra 16 adresses for video memory at address 512-572. The video memory is not normally accessible through the program counter or part of the normal memory, and can only be accessed directly by means of reading and writing to it.
 
 ```mermaid
 
@@ -298,17 +296,40 @@ The following values are in hexadecimal, they go from left to right, inserted in
 
 'MAZE' text:
 ```
-20256A54 28A44240 22254850 20246040 20246A54
+20256A54 
+28A44240 
+22254850 
+20246040 
+20246A54
 ```
 Maze:
 ```
-CFFFFFFF CC003FCF CCFF30C3 C00C3CC3 FFCCF0CF FFCC03CF F00FFF03 F3FC0333 F000F333 FFFFF333 C00F0333 CCCF3F33 CCC03033 CCFFF3F3 CC0003C3 FFFFFFCF
+8AAAAAAA
+80020802
+8AA08222
+A0082022
+82220A82
+88202022
+88828202
+880828A2
+88A08002
+82220AA2
+A0222002
+8A222222
+8022220A
+8A882282
+80008022
+AAAAAAA2
 ```
 End of Maze value:
 ```
-DFFFFFFF
+9AAAAAAA
 ```
 'WIN!' text:
 ```
-101230C4 10103CC4 111233C4 145230C0 101230C4
+101230C4 
+10103CC4 
+111233C4 
+145230C0 
+101230C4
 ```
