@@ -2,7 +2,7 @@
 ### A limited RISC-V Computer that can control a RGB matrix
 Made by Glenn Corthout & Stijn Verwoerd 
 
-![alt text](riscvmaze.gif)
+![alt text](riscvmazeani.gif)
 
 
 ## Index
@@ -152,20 +152,21 @@ Currently the computer has total of 128 4-byte addresses with an extra 16 adress
 
 ```mermaid
 
-graph TD
+graph LR
     subgraph Memory Addresses
+    direction LR
     Instructions[[Instructions
     0x00000000
     ---------------->
-    0x0000018c]]
+    0x0000018c]] -->
     Controller[[Controller
     -----------------
     0x00000190
-    -----------------]]
+    -----------------]] -->
     Presets[[Presets
     0x00000194
     ---------------->
-    0x000001FC]]
+    0x000001FC]] -->
     Video[[Video memory
     0x00000200
     ---------------->
@@ -191,9 +192,6 @@ memory position 0x00000190 when a button press is detected. The button pressed a
 
 ### Maze game
 
-Place all the maze values directly into memory to be able to load up the game
-
-The following values are in hexadecimal, they go from left to right, inserted in memory up to down (smaller to higher value)
 
 Maze program
 ```t
@@ -229,7 +227,7 @@ Maze program
     blt x23, x5, -16                # if current row is smaller than last row of the screen, go back to load the next value
 # load up player position
     lw x21, 60(x15)                 # load current row
-    addi x22, x0, 16                # pos x
+    addi x22, x0, 4                # pos x
     add x21, x21, x22               # add pixel to row value
     addi x23, x15, 60               # pos y
     sw x21, 0(x23)                  # render pixel on screen
@@ -293,6 +291,10 @@ Maze program
     sw x31, 32(x15)
     beq x0, x0, -56                 # jump back to reset screen
 ```
+
+Place all the maze values directly into memory to be able to load up the game
+
+The following values are in hexadecimal, they go from left to right, inserted in memory up to down (smaller to higher value) in the preset part of memory.
 
 'MAZE' text:
 ```
