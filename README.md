@@ -17,9 +17,10 @@ Made by *Glenn Corthout* & *Stijn Verwoerd*
 
 ### <a id="dataflow"></a>
 ## Dataflow 
+*This is a simplified diagram of the circuit*
 ```mermaid
 
-graph TD
+graph TB
 
     subgraph computer
     reg[[Registers]]
@@ -39,15 +40,12 @@ graph TD
     end
 
     subgraph Screen
-    pc(Program 
-    Counter)
-    decode[Position and
+    decode[Row, Position and
     color decoder]    
     vmem[(64B 
     memory)]
     rgb[# RGB #
     Matrix]
-    rd(row decoder)
     end
 
     reg -- jump --> PC
@@ -70,8 +68,6 @@ graph TD
     but -- L, R, UP, DOWN --> oi
 
 
-    pc --> vmem
-    pc --> rd -- row --> rgb
     reg -- address & value --> vmem
     vmem -- raw data --> decode -- display values --> rgb
 
@@ -261,6 +257,10 @@ graph LR
     end
     
 ```
+
+### Video Memory
+
+To overcome CircuitVerse limitations of a 20hz clock, we have decided to offload the framebuffer immediately to render each changing row of the screen as soon as it goes in, otherwise the waiting in between each full frame would be too long.  
 
 ### <a id="controller"></a>
 
