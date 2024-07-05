@@ -89,6 +89,74 @@ We implemented the following instruction set:
 * S-type:   SW
 * SB-type:  BEQ, BLT, BGE, BLTU, BGEU
 
+Since the exact implementation of instructions is boring lecture, we instead give the values you can use to test the more abstract instructions:
+#### **bltu**: 
+The 'bltu" instruction compares two registers as unsigned integers. If the value in the first register is less than the value in the seocnd register, it branches to the specified label; 
+otherwise, it continues to the next instruction
+Test this instruction with the following entry's:
+* instruction: 0x0030e463
+* x1: 0x00000001
+* x3: 0xffffffff
+
+0xffffffff is -1 signed, but 4.294.967.295 unsigned. Hence for this instruction x3 will be larger than x1 and a jump will happen.
+
+#### **bge**:
+The 'bge' instruction compares two registers as signed integers. If the value in the first register is greater than or equal ot the value in the second register, it branches to the specified label;
+otherwise, it continues to the next instruction.
+Test this instruction with the following entry's:
+* instruction: 0x0030d463
+* x1: 0x00000001
+* x3: 0xffffffff
+
+0xffffffff is -1 (signed). Hence for this instruction x1 will be larger than x3 and a jump will happen.
+
+#### **bgeu**:
+The 'bgeu' instruction compares two registers as unsigned integers. If the value in the first register is greater than or equal to the value in the second registers, it branches to the specified label;
+otherwise, it continues to the next instruction.
+Test this instruction with the following entry's:
+* instruction: 0x0030f463
+* x1: 0xffffffff
+* x3: 0x00000001
+
+0xffffffff is -1 signed, but 4.294.967.295 unsigned. Hence for this instruction x1 will be larger than x3 and a jump will happen.
+
+#### **beq**:
+The 'beq' instruction compares two registers. If the values in the two registers are equal, it branches to the the specified label;
+otherwise, it continues to the next instruction.
+Test this instruction with the following entry's:
+* instruction: 0x00308463
+* x1: 0x00000000
+* x3: 0x00000000
+
+Since registers x1 and x3 are the same, a jump will happen to the specified label.
+
+#### **srl**: 
+The 'srl' instruction performs a logical right shift on a value in a register. It shifts the bits in the first register right by the number of positions specified in the second register,
+filling the leftmost bits with zeros, and stores the result in the destination register.
+
+#### **sra**:
+The 'sra' instruction performs an **arithmetic** right shift ona  value in a register. It shifts the bits in the first register right by the number of positions specified in the second register,
+preserving the sign bit, and stores the result in the destination register
+
+#### **sub**:
+The 'sub' instruction subtracts the value in the second register from the value in the first register and stores the resul tin the destination register.
+
+#### **sll**:
+The 'sll' instruction performs a logical left shift on a value in a register. It shifts the bits in the first register left by the number of positions specified in the second register,
+filling the rightmost bits with zeros, and stores the result in the destination register.
+
+#### **slli**:
+The 'slli' instruction performs a logical left shift on a value in a register. It shifts the bits in the first register left by an immediate value (specified in the instruction), 
+filling the rightmost bits with zeros, and stores the result in the destination register.
+
+#### **and**:
+The 'and' instruction performs a bitwise AND operation between two registers. It stores the result in the destination register, where each bit is set to 1 if both corresponding bits in the input
+registers are 1, and 0 otherwise.
+
+#### **or**:
+The 'or' instruction performs a bitwise OR operation between two registers. It stores the result in the destination register, where each bit is set to 1 if at least one of the corresponding bits 
+in the input registers is 1, and 0 otherwise.
+
 ### <a id="rgbmatrix"></a>
 
 ## RGB Matrix 
