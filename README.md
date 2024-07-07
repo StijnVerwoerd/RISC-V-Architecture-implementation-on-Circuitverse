@@ -202,13 +202,17 @@ Each of these colors is then encoded into their respective 24 bit value that the
 * `000000001111111100000000` - Green
 * `000000000000000011111111` - Blue
 
-To cycle through the rows that should be inserted we have created a small program counter that counts 4 at a time (to jump 4 bytes in memory) and that also splits off and decodes into a row selector for the matrix, this way the same row and value in memory are selected simultaneously but independently from the rest of the computer. 
+To select a row the address value gets decoded by doing a bitshift of 2 positions to the right (effectively dividing it by 4) and then is used as an input for the decoder that selects the row. This way the same value will be placed in memory and will be directly displayed on the matrix. With a faster CPU this would be an incorrect implementation and you would instead fill the framebuffer before rendering it, this method however allows us to display the changes significantly faster.
 
-Let's say we want to set pixel 2 on row 3 to the colour blue, we would use the following instructions:
+Let's say we want to set pixel 16 on row 3 to the colour blue, we would use the following instructions:
 ```t
-addi x15, x0, 512           # start of video memory
-addi x4, x0, 805306368      # sets the register x4 to the value 00110000000000000000000000000000
-sw x4, 12(x15)              # stores the value in x4 to the 3th row in the screen memory
+addi x4, x0, 3                  # sets the register x4 to the value you have stored in memory
+sw x4, 524(x0)                  # stores the value in x4 to the 3th row in the video memory
+```
+To pull up a value from memory into the video memory you would do the following:
+```t
+lw x4, /youraddressvaluehere/   # sets the register x4 to the value you have stored in memory
+sw x4, 12(x15)                  # stores the value in x4 to the 3th row in the video memory
 ```
 
 ### <a id="registers"></a>
