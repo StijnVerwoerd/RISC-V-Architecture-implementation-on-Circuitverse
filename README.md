@@ -20,7 +20,7 @@ Made by *Glenn Corthout* & *Stijn Verwoerd*
 *This is a simplified diagram of the circuit*
 ```mermaid
 
-graph TB
+graph LR
 
     subgraph computer
     reg[[Registers]]
@@ -64,7 +64,7 @@ graph TB
     reg -- rs1, rs2 --> alu
     reg -- address & value --> mem
 
-    io <-- reset & data ---> oi
+    oi -- data ---> io
     but -- L, R, UP, DOWN --> oi
 
 
@@ -198,6 +198,7 @@ we defined the colors as such:
 
 Each of these colors is then encoded into their respective 24 bit value that the matrix takes as an input for color.
 
+* `000000000000000000000000` - Black                   
 * `111111110000000000000000` - Red
 * `000000001111111100000000` - Green
 * `000000000000000011111111` - Blue
@@ -222,7 +223,6 @@ sw x4, 12(x15)                  # stores the value in x4 to the 3th row in the v
 Certain values we insert into the register module to save extra lines of code, these are standard values for every program.
 
 controller:
-* x10 - ```0x00000000``` | Here the injected controller value gets stored temporarily
 * x16 - ```0x00000001``` | Represents the Left button
 * x17 - ```0x00000002``` | Represents the Right button
 * x18 - ```0x00000003``` | Represents the Up button
@@ -274,8 +274,12 @@ We use a standard address for the controller.
 
 Address ```0x00000190``` (byte address 400) is being used as the memory address where the controller value gets injected.
 
+We also use a standard register to check the controller values.
+
+* x10 - ```0x00000000``` | Here the injected controller value gets stored temporarily untill it is  checked.
+
 The controller is made functional by a circuit that de-couples the clock from the rest of the circuit and injects a value straight into
-memory position 0x00000190 when a button press is detected. The button pressed are buffered and are reset immediately after the injection, then the software has to detect the button press and can wipe the value from memory so that a new value an be inserted.
+memory position 0x00000190 when a button press is detected. The software has to detect the button press and can wipe the value from memory after it has been used for an operation so that a new value an be inserted.
 
 ### <a id="assembly"></a>
 
@@ -286,7 +290,7 @@ All the code was assembled into machine code with [**THIS**](https://github.com/
 
 ### Maze game
 
-The following game is a very incomplete (it has no rules beyong a starting position and a final finish position) maze game, in which you can control a dot to walk through a predetermined maze. There is nothing stopping you from clipping straight through the walls or walking outside of the boundaries of the screen.
+The following game is a very incomplete (it has no rules beyond a starting position and a final finish position) maze game, in which you can control a dot to walk through a predetermined maze. There is nothing stopping you from clipping straight through the walls or walking outside of the boundaries of the screen.
 
 Maze program:
 ```t
