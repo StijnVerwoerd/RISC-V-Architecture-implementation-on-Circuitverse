@@ -4,6 +4,7 @@ Made by *Glenn Corthout* & *Stijn Verwoerd*
 
 ![alt text](riscvmazeani.gif)
 
+The circuit can be played and viewed [**HERE**](https://ca.cs.ou.nl/simulator/embed/eindproject-ib4501)
 
 ## Index
 
