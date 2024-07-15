@@ -87,13 +87,52 @@ We implemented the following instruction set:
 
 ---
 
-Since explaining the exact implementation of the instructions would be a boring lecture, we instead give you the values you can use to test the more abstract instructions.
+#### ADD:
+Adds the values in two registers together.
+
+It takes the value of the second and the third register, adds them together and stores it in the first register.
+
+Example: `ADD x2, x2, x4`
+
+#### ADDI:
+Add the value in a register together with an immediate value.
+
+The value in the second register plus the value that's provided as the immediate are added together and stored in the first register.
+
+Example: `ADDI x2, x2, 10`
+
+#### LW:
+Stores a word (4 bytes) in a specified memory location.
+
+It takes the value in the first register and saves it in the location of the value in the second regiser + the offset that's in front of it.
+
+Example: `LW x2, 48(x4)`
+
+#### SW:
+Stores a word (4 bytes) in a specified memory location.
+
+It takes the value in the first register and saves it in the location of the value in the second regiser + the offset that's in front of it.
+
+Example: `SW x2, 48(x4)`
+
+#### BLT:
+Compares two registers as signed integers. 
+
+If the value in the first register is less than the value in the second register, it branches to the specified label or offset; 
+otherwise, it continues to the next instruction.
+
+    Test this instruction with the following entry's:
+    * instruction: `0x0030c463`
+    * x1: `0x00000000`
+    * x3: `0x00000001`
+
+Example: `BLT x2, x4, 8`
 
 
 #### BLTU: 
 Compares two registers as unsigned integers. 
 
-If the value in the first register is less than the value in the seocnd register, it branches to the specified label; 
+If the value in the first register is less than the value in the second register, it branches to the specified label or offset; 
 otherwise, it continues to the next instruction.
 
     Test this instruction with the following entry's:
@@ -103,10 +142,12 @@ otherwise, it continues to the next instruction.
 
 `0xffffffff` is -1 signed, but 4.294.967.295 unsigned. Hence for this instruction x3 will be larger than x1 and a jump will happen.
 
+Example: `BLTU x2, x4, 8`
+
 #### BGE:
 Compares two registers as signed integers. 
     
-If the value in the first register is greater than or equal ot the value in the second register, it branches to the specified label;
+If the value in the first register is greater than or equal ot the value in the second register, it branches to the specified label or offset;
 otherwise, it continues to the next instruction.
 
     Test this instruction with the following entry's:
@@ -116,10 +157,12 @@ otherwise, it continues to the next instruction.
 
 `0xffffffff` is -1 (signed). Hence for this instruction x1 will be larger than x3 and a jump will happen.
 
+Example: `BGE x2, x4, 8`
+
 #### **BGEU**:
 Compares two registers as unsigned integers. 
     
-If the value in the first register is greater than or equal to the value in the second registers, it branches to the specified label;
+If the value in the first register is greater than or equal to the value in the second registers, it branches to the specified label or offset;
 otherwise, it continues to the next instruction.
   
     Test this instruction with the following entry's:
@@ -128,6 +171,8 @@ otherwise, it continues to the next instruction.
     * x3: `0x00000001`
 
 `0xffffffff` is -1 signed, but 4.294.967.295 unsigned. Hence for this instruction x1 will be larger than x3 and a jump will happen.
+
+Example: `BGEU x2, x4, 8`
 
 #### BEQ:
 Compares two registers. 
@@ -142,38 +187,55 @@ otherwise, it continues to the next instruction.
 
 Since registers x1 and x3 are the same, a jump will happen to the specified label.
 
+Example: `BEQ x2, x4, 8`
+
 #### SRL: 
 Performs a **logical** right shift on a value in a register. 
 It shifts the bits in the first register right by the number of positions specified in the second register,
 filling the leftmost bits with zeros, and stores the result in the destination register.
+
+Example: `SRL x2, x4, x6`
 
 #### SRA:
 Performs an **arithmetic** right shift on a value in a register. 
 It shifts the bits in the first register right by the number of positions specified in the second register,
 preserving the sign bit, and stores the result in the destination register
 
+Example: `SRA x2, x4, x6`
+
 #### SUB:
 Subtracts the value in the second register from the value in the first register and stores the result in the destination register.
+
+Example: `SUB x2, x4, x6`
 
 #### SLL:
 Performs a **logical** left shift on a value in a register. 
 It shifts the bits in the first register left by the number of positions specified in the second register,
 filling the rightmost bits with zeros, and stores the result in the destination register.
 
+Example: `SLL x2, x4, x6`
+
 #### SLLI:
 Performs a **logical** left shift on a value in a register. 
 It shifts the bits in the first register left by an immediate value (specifiP 
 filling the rightmost bits with zeros, and stores the result in the destination register.
+
+Example: `SRL x2, x4, 8`
 
 #### AND:
 Performs a bitwise AND operation between two registers. 
 It stores the result in the destination register, where each bit is set to 1 if both corresponding bits in the input
 registers are 1, and 0 otherwise.
 
+Example: `AND x2, x4, x6`
+
 #### OR:
 Performs a bitwise OR operation between two registers. 
 It stores the result in the destination register, where each bit is set to 1 if at least one of the corresponding bits 
 in the input registers is 1, and 0 otherwise.
+
+Example: `OR x2, x4, x6`
+
 
 ### <a id="rgbmatrix"></a>
 
